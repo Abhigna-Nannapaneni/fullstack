@@ -1,0 +1,83 @@
+pipeline {
+    agent any
+
+    tools {
+        jdk 'JDK_HOME'
+        maven 'MAVEN_HOME'
+    }
+
+    environment {
+        TOMCAT_URL = 'http://localhost:8080/manager/text'
+        TOMCAT_USER = 'admin'
+        TOMCAT_PASS = 'admin'
+
+        BACKEND_REPO = 'https://github.com/imasheshk/crud-be.git'
+        FRONTEND_REPO = 'https://github.com/imasheshk/crud-fe.git'
+
+        BACKEND_DIR = 'backend'
+        FRONTEND_DIR = 'frontend'
+
+        BACKEND_WAR = 'backend/target/springapp1.war'
+        FRONTEND_WAR = 'frontend/frontapp1.war'
+    }
+
+    stages {
+        stage('Clone Repositories') {
+            steps {
+                dir("${env.BACKEND_DIR}") {
+                    git branch: 'main', url: "${env.BACKEND_REPO}"
+                }
+                dir("${env.FRONTEND_DIR}") {
+                    git branch: 'main', url: "${env.FRONTEND_REPO}"
+                }
+            }
+        }
+
+        stage('Build React Frontend') {
+            steps {
+                script {
+                    def nodeHome = tool name: 'NODE_HOME', type: 'jenkins.plugins.nodejs.tools.NodeJSInstallation'
+                    env.PATH = "${nodeHome}\\bin;${env.PATH}"
+                }
+                dir("${env.FRONTEND_DIR}") {
+                    bat 'npm install'
+                    bat 'npm run build'
+                }
+            }
+        }
+
+        stage('Package React as WAR') {
+            steps {
+                script {
+                    def warDir = "${env.FRONTEND_DIR}\\war_content"
+                    bat "if exist ${warDir} rmdir /S /Q ${warDir}"
+                    bat "mkdir ${warDir}\\META-INF"
+                    bat "mkdir ${warDir}\\WEB-INF"
+                    bat "xcopy /E /Y /I \"${env.FRONTEND_DIR}\\dist\\*\" \"${warDir}\\\""
+                    bat "jar -cvf ${env.FRONTEND_WAR} -C ${warDir} ."
+                }
+            }
+        }
+
+        stage('Build Spring Boot App') {
+            steps {
+                dir("${env.BACKEND_DIR}") {
+                    bat 'mvn clean package'
+                    bat 'rename target\\*.war springapp1.war'
+                }
+            }
+        }
+
+        stage('Deploy Spring Boot WAR') {
+            steps {
+                bat "curl -u ${env.TOMCAT_USER}:${env.TOMCAT_PASS} --upload-file \"${env.BACKEND_WAR}\" \"${env.TOMCAT_URL}/deploy?path=/springapp1&update=true\""
+            }
+        }
+
+        stage('Deploy Frontend WAR') {
+            steps {
+                bat "curl -u ${env.TOMCAT_USER}:${env.TOMCAT_PASS} --upload-file \"${env.FRONTEND_WAR}\" \"${env.TOMCAT_URL}/deploy?path=/frontapp1&update=true\""
+            }
+        }
+    }
+}

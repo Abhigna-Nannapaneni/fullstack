@@ -1,0 +1,30 @@
+﻿
+
+StatusCode        : 200
+StatusDescription : OK
+Content           : # Created by https://www.toptal.com/developers/gitignore/api/java,node
+                    # Edit at https://www.toptal.com/developers/gitignore?templates=java,node
+                    
+                    ### Java ###
+                    # Compiled class file
+                    *.class
+                    
+                    # Log file...
+RawContent        : HTTP/1.1 200 OK
+                    Connection: keep-alive
+                    CF-RAY: 973aaadedc9947f4-BOM
+                    x-robots-tag: noindex, nofollow
+                    cf-cache-status: DYNAMIC
+                    alt-svc: h3=":443"; ma=86400
+                    Content-Length: 2705
+                    Content-Type: text...
+Forms             : 
+Headers           : {[Connection, keep-alive], [CF-RAY, 973aaadedc9947f4-BOM], [x-robots-tag, noindex, nofollow], [cf-cache-status, DYNAMIC]...}
+Images            : {}
+InputFields       : {}
+Links             : {}
+ParsedHtml        : 
+RawContentLength  : 2705
+
+
+
